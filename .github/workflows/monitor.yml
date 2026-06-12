@@ -35,7 +35,7 @@ jobs:
       - name: Commit and Push Updated Data
         run: |
           git config --global user.name "jharviy"
-          git config --global user.email "jharviventure@gmail.com"
+          git config --global user.email "jharviy@users.noreply.github.com"
           git add -f data/
           git diff-index --quiet HEAD || git commit -m "Automated Daily Market Update: $(date +'%Y-%m-%d')"
           git push
