@@ -292,7 +292,7 @@ class PropertyAnalyzer:
 </body>
 </html>"""
 
-        output_path = output_dir / f"analysis_{date_label}.html"
+        output_path = output_dir / f"analysis_latest.html"
         output_path.write_text(html, encoding="utf-8")
         logger.success(f"Report saved: {output_path}")
         return output_path
