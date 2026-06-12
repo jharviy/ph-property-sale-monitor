@@ -1,0 +1,41 @@
+name: Daily Property Market Monitor
+
+on:
+  schedule:
+    # Runs every day at 12:00 AM UTC (8:00 AM Philippine Time)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows you to click a button on GitHub to run it manually anytime
+
+jobs:
+  run-etl:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Clone your repository onto the GitHub cloud computer
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/checkout@v4
+        with:
+          python-version: '3.14'
+
+      # 3. Install your dependencies (pandas, plotly, openpyxl, etc.)
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      # 4. Run your script (creates/updates xls, db, parquet, html in /data)
+      # Switch this to your actual script file name and required CLI arguments
+      - name: Run Property Scanner
+        run: python main.py --source remote
+
+      # 5. Commit the updated data folder back to your GitHub Repo
+      - name: Commit and Push Updated Data
+        run: |
+          git config --global user.name "jharviy"
+          git config --global user.email "jharviventure@gmail.com"
+          git add data/
+          git diff-index --quiet HEAD || git commit -m "Automated Daily Market Update: $(date +'%Y-%m-%d')"
+          git push
