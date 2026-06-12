@@ -36,6 +36,6 @@ jobs:
         run: |
           git config --global user.name "jharviy"
           git config --global user.email "jharviventure@gmail.com"
-          git add data/
+          git add -f data/
           git diff-index --quiet HEAD || git commit -m "Automated Daily Market Update: $(date +'%Y-%m-%d')"
           git push
