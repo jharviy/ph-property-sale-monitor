@@ -63,7 +63,7 @@ def run_analysis(run_date: date | None) -> None:
     """Generate analysis report from existing DB data."""
     analyzer = PropertyAnalyzer()
     # path = analyzer.export_report(run_date)   
-    path = analyzer.export_report(date.today())     #Analyze only today
+    path = analyzer.export_report()     #Analyze All
     if path:
         logger.success(f"Open your report: {path.resolve()}")
 
