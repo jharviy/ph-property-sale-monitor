@@ -28,9 +28,6 @@ PROVINCE_TO_REGION: dict[str, str] = {
     "NCR 3rd District": "NCR",
     "NCR 4th District": "NCR",
 
-
-
-
     # ── Region I – Ilocos ─────────────────────────────────────────────────────
     "Ilocos Norte": "Region I",
     "Ilocos Sur": "Region I",

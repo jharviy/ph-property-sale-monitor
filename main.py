@@ -1,12 +1,10 @@
 """
-PH Foreclosed Properties ETL — CLI Entry Point
+PH Real Estate Listings ETL — CLI Entry Point
 
 Usage:
     python main.py                        # full ETL + analysis for today
     python main.py --mode etl             # ETL only
     python main.py --mode analyze         # analysis on existing data
-    python main.py --date 2026-06-12      # specific date
-    python main.py --source BSP           # specific source (default: all enabled)
 """
 import argparse
 import sys
@@ -49,10 +47,10 @@ TRANSFORMER_MAP = {
 }
 
 
-def run_etl(source_name: str, run_date: date) -> None:
+def run_etl(run_date: date) -> None:
     """Run the full ETL for one source."""
-    extractor = EXTRACTOR_MAP[source_name]()
-    transformer = TRANSFORMER_MAP[source_name]()
+    extractor = EXTRACTOR_MAP["BSP"]()
+    transformer = TRANSFORMER_MAP["BSP"]()
     loader = DatabaseLoader()
 
     pipeline = ETLPipeline(extractor, transformer, loader)
@@ -71,15 +69,13 @@ def run_analysis(run_date: date | None) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="main.py",
-        description="PH Foreclosed Properties — ETL + Analysis",
+        description="PH Properties for Sale — ETL + Analysis",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
             "  python main.py                         # full run, today\n"
             "  python main.py --mode etl              # ETL only\n"
             "  python main.py --mode analyze          # analysis only\n"
-            "  python main.py --date 2026-06-01       # specific date\n"
-            "  python main.py --source BSP            # specific source\n"
         ),
     )
     parser.add_argument(
@@ -88,32 +84,15 @@ def main() -> None:
         default="full",
         help="Pipeline mode (default: full)",
     )
-    parser.add_argument(
-        "--date",
-        type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
-        default=None,
-        help="Run date YYYY-MM-DD (default: today)",
-    )
-    parser.add_argument(
-        "--source",
-        choices=list(SOURCES.keys()),
-        default=None,
-        help="Which source to run (default: all enabled sources)",
-    )
 
     args = parser.parse_args()
-    run_date: date = args.date or date.today()
-
-    enabled_sources = (
-        [args.source] if args.source else [k for k, v in SOURCES.items() if v["enabled"]]
-    )
+    run_date: date = date.today()
+    # run_date: date = args.date or date.today()
 
     if args.mode in ("full", "etl"):
-        for src in enabled_sources:
-            run_etl(src, run_date)
-
+        run_etl(run_date)
     if args.mode in ("full", "analyze"):
-        run_analysis(run_date if args.mode != "analyze" or args.date else None)
+        run_analysis(run_date)
 
 
 if __name__ == "__main__":

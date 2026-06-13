@@ -115,7 +115,7 @@ class PropertyAnalyzer:
  
         # Relabel x-axis ticks to readable PHP amounts
         fig.update_xaxes(
-            tickvals=[4.4, 5, 5.3, 5.7, 6, 6.7, 7, 7.7, 8],
+            tickvals=[4.7, 5, 5.3, 5.7, 6, 6.7, 7, 7.7, 8],
             ticktext=["₱50K","₱100K", "₱200K", "₱500K", "₱1M", "₱5M", "₱10M", "₱50M", "₱100M"],
             title_text="Price (PHP)",
         )
@@ -207,9 +207,9 @@ class PropertyAnalyzer:
                                 "automargin": True,            # <-- Prevents long labels from getting cut off
                                 "tickmode": "array",
                                 "tickvals": top["property_acct_no"],
-                                "ticktext": top["label"]
+                                "ticktext": top["label"],
                             
-                            })
+                            }, yaxis_title = "Address | Property Acct. No.")
 
     # ── Report export ─────────────────────────────────────────────────────────
 
@@ -268,7 +268,7 @@ class PropertyAnalyzer:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BSP Foreclosed Properties — {date_label}</title>
+  <title>Real Estate Listings Report</title>
   <style>
     body {{ font-family: 'Segoe UI', sans-serif; max-width: 1200px; margin: 0 auto; padding: 24px; background:#f7f8fa; }}
     h1 {{ color: #1a2e44; }}
@@ -280,9 +280,9 @@ class PropertyAnalyzer:
   </style>
 </head>
 <body>
-  <h1>🏠 PH Foreclosed Properties Analysis</h1>
+  <h1>🏠 PH Real Estate Listings Report</h1>
   <p><b>Source:</b> Bangko Sentral ng Pilipinas (BSP) &nbsp;|&nbsp;
-     <b>Data date:</b> {date.today()} &nbsp;|&nbsp;
+     <b>Date:</b> {date.today()} &nbsp;|&nbsp;
      <b>Total listings:</b> {stats['total_properties']:,}</p>
 
   <h2>Summary Statistics</h2>
@@ -292,7 +292,7 @@ class PropertyAnalyzer:
 </body>
 </html>"""
 
-        output_path = output_dir / f"analysis_latest.html"
+        output_path = output_dir / f"analysis.html"
         output_path.write_text(html, encoding="utf-8")
         logger.success(f"Report saved: {output_path}")
         return output_path

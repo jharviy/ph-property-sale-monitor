@@ -10,7 +10,7 @@
 
 The pipeline runs automatically every day via GitHub Actions and publishes an interactive report here:
 
-**👉 [View Latest Property Report](https://jharviy.github.io/ph-property-sale-monitor/data/processed/analysis_latest.html)**
+**👉 [View Latest Property Report](https://jharviy.github.io/ph-property-sale-monitor/data/processed/analysis.html)**
 
 ---
 
@@ -60,10 +60,10 @@ BSPExtractor            → data/raw/bsp_properties_YYYY-MM-DD.xls
     ▼
 BSPTransformer          → validates, cleans, enriches addresses
     │
-    ├──► DatabaseLoader ──► SQLite   (data/foreclosed_properties.db)
+    ├──► DatabaseLoader ──► SQLite   (data/realestate_listing.db)
     │                  └──► Parquet  (data/processed/properties_YYYY-MM-DD.parquet)
     │
-    └──► PropertyAnalyzer ──► data/processed/analysis_latest.html
+    └──► PropertyAnalyzer ──► data/processed/analysis.html
                               (published via GitHub Pages)
 ```
 
@@ -116,14 +116,14 @@ ph-property-sale-monitor/
 │   ├── pipeline/            # ETL orchestrator — source-agnostic
 │   ├── analysis/            # chart generation + HTML report
 │   └── utils/
-│       ├── address_parser.py    # extract city/province from raw address
-│       └── ph_regions.py        # province → region lookup (all 18 regions)
+│       ├── address_parser.py   # extract city/province from raw address
+│       └── ph_regions.py       # province → region lookup (all 18 regions)
 ├── data/
-│   ├── raw/                 # downloaded XLS files
-│   ├── processed/           # Parquet snapshots + HTML reports
-│   └── properties.db        # SQLite database
-├── main.py                  # CLI entry point
-├── Makefile                 # dev shortcuts
+│   ├── raw/                    # downloaded XLS files
+│   ├── processed/              # Parquet snapshots + HTML reports
+│   └── realestate_listing.db   # SQLite database
+├── main.py                     # CLI entry point
+├── Makefile                    # dev shortcuts
 └── requirements.txt
 ```
 
@@ -131,7 +131,7 @@ ph-property-sale-monitor/
 
 ## Database Schema
 
-**`properties`** table — one row per listing per day
+**`properties`** table — one row per listing
 
 | Column | Type | Notes |
 |---|---|---|

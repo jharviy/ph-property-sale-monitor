@@ -1,5 +1,5 @@
 """
-Central configuration for the PH Foreclosed Properties ETL pipeline.
+Central configuration for the PH Property Listings ETL pipeline.
 Override any setting via environment variable or .env file.
 """
 import os
@@ -19,7 +19,7 @@ for _dir in (RAW_DIR, PROCESSED_DIR, LOG_DIR):
     _dir.mkdir(parents=True, exist_ok=True)
 
 # ── Database ──────────────────────────────────────────────────────────────────
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DATA_DIR}/foreclosed_properties.db")
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DATA_DIR}/realestate_listing.db")
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")

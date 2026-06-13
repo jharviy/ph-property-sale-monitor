@@ -55,10 +55,6 @@ class BSPExtractor(BaseExtractor):
         Caches by date — re-running on the same day returns the existing file
         without hitting the network again.
 
-        Args:
-            save_dir: Directory to save the downloaded file.
-            run_date: Scrape date (embedded in filename for traceability).
-
         Returns:
             Path to the (possibly cached) downloaded file.
         """

@@ -78,17 +78,9 @@ class BSPTransformer(BaseTransformer):
 
         df_list = pd.read_html(
             path,
-            header=0,                       # Works identical: sets the first remaining row as header
+            header=0,                       # Sets the first remaining row as header
             )
-        # df_list[1].to_csv("check.csv", index=False)
         df = df_list[1].astype(str).replace('nan', None)
-        # df = pd.read_excel(
-        #     path,
-        #     skiprows=self._METADATA_ROWS,   # skip rows 1–13; row 14 → header
-        #     header=0,
-        #     engine=engine,
-        #     dtype=str,                       # read everything as str first
-        # )
         # Normalise column names
         df.columns = [str(c).strip() for c in df.columns]
         df = df.rename(columns=_COLUMN_RENAME)
@@ -108,13 +100,20 @@ class BSPTransformer(BaseTransformer):
     def _split_category(df: pd.DataFrame) -> pd.DataFrame:
         """Split 'category_classification' → 'category' + 'classification'."""
         if "category_classification" not in df.columns:
-            df["category"] = None
-            df["classification"] = None
+            df["category"] = "Unclassified"
+            df["classification"] = "Unclassified"
             return df
 
         split = df["category_classification"].str.split(" - ", n=1, expand=True)
+        no_data = ["no data available", "other"]
         df["category"] = split.get(0, pd.Series(dtype=str)).str.strip()
         df["classification"] = split.get(1, pd.Series(dtype=str)).str.strip()
+
+        no_data = ["no data available", "other"]
+        pattern = "|".join(re.escape(word) for word in no_data)
+        df.loc[df["category"].str.contains(pattern, case=False, na=False), "category"] = "Unclassified"
+        df.loc[df["classification"].str.contains(pattern, case=False, na=False), "classification"] = "Unclassified"
+
         return df.drop(columns=["category_classification"])
 
     @staticmethod

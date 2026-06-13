@@ -44,7 +44,6 @@ class DatabaseLoader:
         if not records:
             logger.warning("No records to load.")
             return 0
-
         rows = [
             {
                 "property_acct_no": r.property_acct_no,

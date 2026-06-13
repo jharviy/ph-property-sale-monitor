@@ -53,7 +53,7 @@ class ETLPipeline:
         Raises:
             Any exception from Extract or Transform phases after logging.
         """
-        run_date = run_date or date.today()
+        # run_date = run_date or date.today()
         source = self.extractor.source_name
         run_record = ScrapeRunRecord(source=source, date_scraped=run_date)
         t0 = time.perf_counter()
