@@ -282,7 +282,7 @@ class PropertyAnalyzer:
 <body>
   <h1>🏠 PH Foreclosed Properties Analysis</h1>
   <p><b>Source:</b> Bangko Sentral ng Pilipinas (BSP) &nbsp;|&nbsp;
-     <b>Data date:</b> {date_label} &nbsp;|&nbsp;
+     <b>Data date:</b> {date.today()} &nbsp;|&nbsp;
      <b>Total listings:</b> {stats['total_properties']:,}</p>
 
   <h2>Summary Statistics</h2>
