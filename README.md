@@ -10,7 +10,7 @@
 
 The pipeline runs automatically every day via GitHub Actions and publishes an interactive report here:
 
-**👉 [View Latest Property Report](https://jharviy.github.io/ph-property-sale-monitor/data/processed/analysis.html)**
+**👉 [View Latest Property Report](https://jharviy.github.io/ph-property-sale-monitor/data/processed/analysis_interactive.html)**
 
 ---
 

@@ -31,6 +31,7 @@ logger.add(
 # ── Project imports ───────────────────────────────────────────────────────────
 from config.settings import SOURCES
 from src.analysis.analyzer import PropertyAnalyzer
+from src.analysis.analyzer_interactive import InteractiveReportGenerator
 from src.extractors.bsp_extractor import BSPExtractor
 from src.loaders.db_loader import DatabaseLoader
 from src.pipeline.etl_pipeline import ETLPipeline
@@ -59,9 +60,10 @@ def run_etl(run_date: date) -> None:
 
 def run_analysis(run_date: date | None) -> None:
     """Generate analysis report from existing DB data."""
-    analyzer = PropertyAnalyzer()
-    # path = analyzer.export_report(run_date)   
-    path = analyzer.export_report()     #Analyze All
+    # analyzer = PropertyAnalyzer()
+    analyzer = InteractiveReportGenerator()
+    path = analyzer.export_report(run_date)   #func()Analyze All
+    # path = InteractiveReportGenerator.export_report(run_date)
     if path:
         logger.success(f"Open your report: {path.resolve()}")
 

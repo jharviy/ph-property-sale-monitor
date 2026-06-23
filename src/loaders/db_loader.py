@@ -68,7 +68,7 @@ class DatabaseLoader:
         # SQLite INSERT OR IGNORE honours the unique constraint
         insert_sql = text(
             """
-            INSERT OR IGNORE INTO properties (
+            INSERT INTO properties (
                 property_acct_no, category, classification, tct_number,
                 address, city, province, region,
                 lot_area_sqm, floor_area_sqm, price_php, price_per_sqm,
@@ -79,6 +79,11 @@ class DatabaseLoader:
                 :lot_area_sqm, :floor_area_sqm, :price_php, :price_per_sqm,
                 :other_remarks, :source, :date_scraped
             )
+            ON CONFLICT(property_acct_no, tct_number)
+            DO UPDATE SET
+                date_scraped = excluded.date_scraped,
+                price_php = excluded.price_php,
+                price_per_sqm = excluded.price_per_sqm
             """
         )
 
