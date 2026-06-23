@@ -69,7 +69,7 @@ def _build_html(records_json: str, regions_json: str, date_label: str) -> str:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PH Real Estate — Interactive Report</title>
+  <title>PH Real Estate Listings Report</title>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
     * {{ box-sizing: border-box; }}
@@ -116,22 +116,38 @@ def _build_html(records_json: str, regions_json: str, date_label: str) -> str:
       font-size: 14px; color: #333; user-select: none;
     }}
     .cat-checkboxes input[type=checkbox] {{ width: 15px; height: 15px; cursor: pointer; accent-color: #2c5f8a; }}
+    .city-row {{ display: flex; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee; }}
+    .city-row label {{ font-weight: 600; color: #1a2e44; white-space: nowrap; }}
+    .city-row select {{ padding: 6px 12px; border: 1px solid #ccd; border-radius: 4px; font-size: 14px; min-width: 220px; background: white; cursor: pointer; }}
+    .reset-bar {{ text-align: right; margin-bottom: 8px; }}
+    .reset-bar button {{
+      padding: 6px 16px; background: #2c5f8a; color: white; border: none;
+      border-radius: 4px; cursor: pointer; font-size: 14px;
+    }}
+    .reset-bar button:hover {{ background: #1a3d5c; }}
   </style>
 </head>
 <body>
-  <h1>&#127968; PH Real Estate Listings &mdash; Interactive Report</h1>
+  <h1>&#127968; PH Real Estate Listings Report</h1>
   <p class="meta">
     <b>Source:</b> Bangko Sentral ng Pilipinas (BSP) &nbsp;|&nbsp;
     <b>Generated:</b> {today} &nbsp;|&nbsp;
     Showing <span id="record-count">&mdash;</span> listings
   </p>
 
-  <div class="filters">
-    <label for="sel-region">Region:</label>
-    <select id="sel-region"><option value="">All Regions</option></select>
-    <label for="sel-city">City / Municipality:</label>
-    <select id="sel-city"><option value="">All Cities</option></select>
-    <button onclick="resetFilters()">Reset All</button>
+  <div class="reset-bar"><button onclick="resetFilters()">Reset All Filters</button></div>
+
+  <div class="cat-filters">
+    <div class="cat-header">
+      <span>Region:</span>
+      <button onclick="setRegionAll(true)">Select All</button>
+      <button onclick="setRegionAll(false)">Deselect All</button>
+    </div>
+    <div class="cat-checkboxes" id="region-checkboxes"></div>
+    <div class="city-row">
+      <label for="sel-city">City / Municipality:</label>
+      <select id="sel-city"><option value="">All Cities</option></select>
+    </div>
   </div>
 
   <div class="cat-filters">
@@ -158,21 +174,41 @@ def _build_html(records_json: str, regions_json: str, date_label: str) -> str:
 const ALL_DATA    = {records_json};
 const ALL_REGIONS = {regions_json};
 
-const selRegion = document.getElementById('sel-region');
-const selCity   = document.getElementById('sel-city');
+// ── Region checkboxes ─────────────────────────────────────────────────────────
+function buildRegionCheckboxes() {{
+  const wrap = document.getElementById('region-checkboxes');
+  wrap.innerHTML = '';
+  ALL_REGIONS.forEach((r, i) => {{
+    const id = 'chk-region-' + i;
+    wrap.insertAdjacentHTML('beforeend',
+      `<label for="${{id}}"><input type="checkbox" id="${{id}}" value="${{r}}" checked onchange="onRegionChange()"> ${{r}}</label>`
+    );
+  }});
+}}
 
-// ── Populate region dropdown ──────────────────────────────────────────────────
-ALL_REGIONS.forEach(r => {{
-  const o = document.createElement('option');
-  o.value = o.textContent = r;
-  selRegion.appendChild(o);
-}});
+function getSelectedRegions() {{
+  return [...document.querySelectorAll('#region-checkboxes input:checked')].map(el => el.value);
+}}
 
-// ── Cascade: region → city ────────────────────────────────────────────────────
-function buildCityDropdown(regionFilter) {{
+function setRegionAll(checked) {{
+  document.querySelectorAll('#region-checkboxes input').forEach(el => el.checked = checked);
+  buildCityDropdown();
+  render();
+}}
+
+function onRegionChange() {{
+  buildCityDropdown();
+  render();
+}}
+
+// ── City dropdown (cascades from checked regions) ─────────────────────────────
+const selCity = document.getElementById('sel-city');
+
+function buildCityDropdown() {{
+  const selRegions = new Set(getSelectedRegions());
   const cities = [...new Set(
     ALL_DATA
-      .filter(d => !regionFilter || d.region === regionFilter)
+      .filter(d => !selRegions.size || selRegions.has(d.region))
       .map(d => d.city)
       .filter(Boolean)
   )].sort();
@@ -184,16 +220,13 @@ function buildCityDropdown(regionFilter) {{
   }});
 }}
 
-selRegion.addEventListener('change', () => {{
-  buildCityDropdown(selRegion.value);
-  render();
-}});
 selCity.addEventListener('change', render);
 
 function resetFilters() {{
-  selRegion.value = '';
-  buildCityDropdown('');
-  setCatAll(true);
+  document.querySelectorAll('#region-checkboxes input').forEach(el => el.checked = true);
+  buildCityDropdown();
+  document.querySelectorAll('#cat-checkboxes input').forEach(el => el.checked = true);
+  render();
 }}
 
 // ── Category checkboxes ───────────────────────────────────────────────────────
@@ -225,12 +258,13 @@ function setCatAll(checked) {{
 
 // ── Filter ────────────────────────────────────────────────────────────────────
 function getFiltered() {{
-  const region   = selRegion.value;
-  const city     = selCity.value;
-  const selCats  = new Set(getSelectedCats());
+  const selRegions   = new Set(getSelectedRegions());
+  const city         = selCity.value;
+  const selCats      = new Set(getSelectedCats());
+  const totalRegions = document.querySelectorAll('#region-checkboxes input').length;
   return ALL_DATA.filter(d =>
-    (!region || d.region === region) &&
-    (!city   || d.city   === city)   &&
+    (selRegions.size === totalRegions || selRegions.has(d.region)) &&
+    (!city || d.city === city)                                     &&
     (selCats.size === ALL_CATS.length || selCats.has(d.category))
   );
 }}
@@ -259,7 +293,6 @@ function renderStats(data) {{
     ['Total Properties',    data.length.toLocaleString()],
     ['Average Price',       fmtPHP(mean(prices))],
     ['Median Price',        fmtPHP(median(prices))],
-    ['Total Value',         fmtPHP(prices.reduce((a, b) => a + b, 0))],
     ['Avg Lot Area (sqm)',  fmtNum(mean(areas))],
     ['Median Price / sqm',  fmtPHP(median(psqm))],
     ['Unique Regions',      regions.size],
@@ -338,9 +371,14 @@ function renderProvinces(data, topN = 15) {{
   const names    = sorted.map(([k]) => k);
   const counts   = sorted.map(([, v]) => v.count);
   const medians  = sorted.map(([, v]) => median(v.prices) || 0);
+  const mMin = Math.min(...medians), mMax = Math.max(...medians);
   Plotly.react('chart-provinces',
     [{{ type: 'bar', orientation: 'h', x: counts, y: names,
-        marker: {{ color: medians, colorscale: 'Blues', showscale: true, colorbar: {{ title: 'Median Price' }} }} }}],
+        marker: {{
+          color: medians, colorscale: 'Viridis', showscale: true,
+          cmin: mMin, cmax: mMax,
+          colorbar: {{ title: 'Median Price (PHP)', tickprefix: '₱', tickformat: ',.0f' }},
+        }} }}],
     {{ ...BASE, title: `Top ${{topN}} Provinces by Number of Listings`,
        xaxis: {{ title: '# Properties' }},
        yaxis: {{ categoryorder: 'total ascending', automargin: true }},
@@ -373,16 +411,24 @@ function renderTreemap(data) {{
     const k = d.region + '||' + d.category;
     agg[k] = (agg[k] || 0) + 1;
   }});
+  // Sum children so region nodes show the correct total on hover
+  const regionTotals = {{}};
+  Object.entries(agg).forEach(([k, v]) => {{
+    const [r] = k.split('||');
+    regionTotals[r] = (regionTotals[r] || 0) + v;
+  }});
   const labels = [], parents = [], values = [];
-  [...new Set(data.map(d => d.region).filter(Boolean))].forEach(r => {{
-    labels.push(r); parents.push(''); values.push(0);
+  Object.entries(regionTotals).forEach(([r, total]) => {{
+    labels.push(r); parents.push(''); values.push(total);
   }});
   Object.entries(agg).forEach(([k, v]) => {{
     const [r, c] = k.split('||');
     labels.push(c); parents.push(r); values.push(v);
   }});
+  const vMin = Math.min(...values), vMax = Math.max(...values);
   Plotly.react('chart-treemap',
-    [{{ type: 'treemap', labels, parents, values, branchvalues: 'remainder', marker: {{ colorscale: 'Teal' }} }}],
+    [{{ type: 'treemap', labels, parents, values, branchvalues: 'total',
+        marker: {{ colorscale: 'Plasma', cmin: vMin, cmax: vMax }} }}],
     {{ ...BASE, title: 'Property Distribution — Region → Category' }}
   );
 }}
@@ -435,7 +481,8 @@ function render() {{
 }}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-buildCityDropdown('');
+buildRegionCheckboxes();
+buildCityDropdown();
 buildCatCheckboxes();
 render();
 </script>
